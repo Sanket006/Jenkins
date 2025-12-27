@@ -1,0 +1,33 @@
+pipeline {
+    agent {
+        label 'ssh-agent'    
+    }
+
+    stages {
+
+        stage('Pull') {
+            steps {
+                echo 'Pulling source code from Git repository'
+                git 'https://github.com/Sanket006/EasyCRUD.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the application'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application'
+            }
+        }
+    }
+}

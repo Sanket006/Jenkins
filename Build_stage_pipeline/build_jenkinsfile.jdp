@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Pull') {
+            steps {
+                echo 'Pulling source code from Git repository'
+                git branch: 'main',
+                    url: 'https://github.com/Sanket006/EasyCRUD.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the application'
+                sh '''cd backend
+                      mvn clean package -DskipTests'''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application'
+            }
+        }
+    }
+}                                                
