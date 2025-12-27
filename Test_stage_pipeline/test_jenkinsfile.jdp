@@ -6,7 +6,7 @@ pipeline {
         stage('Pull') {
             steps {
                 echo 'Pulling source code from Git repository'
-                git branch: 'main', url: 'https://github.com/Sanket006/EasyCRUD.git'
+                git branch: 'devops', url: 'https://github.com/abhilashmwaghmare/EASY_CRUD.git'
             }
         }
 
