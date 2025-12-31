@@ -62,6 +62,11 @@ resource "aws_iam_role_policy_attachment" "cni_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
+resource "aws_iam_role_policy_attachment" "ec2_container_registry" {
+  role       = aws_iam_role.node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 ### Node Group
 
 
@@ -80,7 +85,8 @@ resource "aws_eks_node_group" "nodes" {
 
   depends_on = [
     aws_iam_role_policy_attachment.node_policy,
-    aws_iam_role_policy_attachment.cni_policy
+    aws_iam_role_policy_attachment.cni_policy,
+    aws_iam_role_policy_attachment.ec2_container_registry
   ]
 }
 
