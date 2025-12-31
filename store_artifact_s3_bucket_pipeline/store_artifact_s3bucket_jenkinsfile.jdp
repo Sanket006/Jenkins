@@ -50,13 +50,18 @@ pipeline {
                         credentialsId: 'aws-s3-cred'
                     )
                 ]) {
-                    sh '''
-                        echo "Listing JAR files..."
-                        ls "$WORKSPACE/backend/target/"
+                    // sh '''
+                    //     echo "Listing JAR files..."
+                    //     ls "$WORKSPACE/backend/target/"
 
-                        aws s3 cp "$WORKSPACE/backend/target/"*.jar \
-                        s3://my-artifact-bucket-jar-file/artifacts/
+                    //     aws s3 cp "$WORKSPACE/backend/target/"*.jar \
+                    //     s3://my-artifact-bucket-jar-file/artifacts/
+                    // '''
+                    sh '''
+                       ls backend/target
+                       aws s3 cp backend/target/*.jar s3://my-artifact-bucket-jar-file/artifacts/
                     '''
+
                 }
             }
         }
