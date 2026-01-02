@@ -11,8 +11,8 @@ pipeline {
 
         stage('Pull Code') {
             steps {
-                git branch: 'devops',
-                    url: 'https://github.com/abhilashmwaghmare/cdeb45-jenkins-offline.git'
+                git branch: 'main',
+                    url: 'https://github.com/Sanket006/Jenkins.git'
             }
         }
 
