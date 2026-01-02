@@ -11,42 +11,48 @@ pipeline {
         }
         stage('Build Backend Image') {
             steps {
-                sh '''echo Building Backend Image...
+                echo 'Building Backend Image...'
+                sh '''cd backend
                 docker build -t sanket006/devops/backend:latest .'''
             }
         }
 
         stage ('Push Backend Image') {
             steps {
-                sh '''echo Pushing Backend Image...
+                echo 'Pushing Backend Image...'
+                sh '''
                 docker push sanket006/devops/backend:latest'''
             }
         }
 
         stage('Build Frontend Image') {
             steps {
-                sh '''echo Building Frontend Image...
+                echo 'Building Frontend Image...'
+                sh '''cd frontend
                 docker build -t sanket006/devops/frontend:latest .'''
             }
         }
 
         stage ('Push Frontend Image') {
             steps {
-                sh '''echo Pushing Frontend Image...
+                echo 'Pushing Frontend Image...'
+                sh '''
                 docker push sanket006/devops/frontend:latest'''
             }
         }
 
         stage('Deploy to kubrnetes') {
             steps {
-                sh '''echo Deploying to Kubernetes...
+                echo 'Deploying to Kubernetes...'
+                sh '''
                 kubectl apply -f simple-deploy/'''
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh '''echo Verifying Deployment...
+                echo 'Verifying Deployment...'
+                sh '''
                 kubectl get pods'''
             }
         }
