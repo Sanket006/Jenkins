@@ -2,6 +2,19 @@ provider "aws" {
   region = var.aws_region
 }
 
+### Get Default VPC Subnets
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 ### IAM Role for EKS Cluster
 
 resource "aws_iam_role" "eks_cluster_role" {
@@ -62,7 +75,7 @@ resource "aws_iam_role_policy_attachment" "cni_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-resource "aws_iam_role_policy_attachment" "ec2_container_registry" {
+resource "aws_iam_role_policy_attachment" "ecr_policy" {
   role       = aws_iam_role.node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
@@ -76,7 +89,6 @@ resource "aws_eks_node_group" "nodes" {
   node_role_arn   = aws_iam_role.node_role.arn
   subnet_ids      = data.aws_subnets.default.ids
   instance_types  = [var.node_instance_type]
-
   scaling_config {
     desired_size = var.desired_nodes
     max_size     = 3
@@ -86,21 +98,6 @@ resource "aws_eks_node_group" "nodes" {
   depends_on = [
     aws_iam_role_policy_attachment.node_policy,
     aws_iam_role_policy_attachment.cni_policy,
-    aws_iam_role_policy_attachment.ec2_container_registry
+    aws_iam_role_policy_attachment.ecr_policy
   ]
 }
-
-### Get Default VPC Subnets
-
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-
