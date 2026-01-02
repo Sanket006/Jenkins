@@ -1,85 +1,135 @@
 pipeline {
     agent any
 
-    // environment {
-    //     S3_BUCKET = 'my-app-artifacts-bucket'
-    //     APP_NAME  = 'my-webapp'
-    //     EC2_USER  = 'ubuntu'
-    //     EC2_HOST  = ''
-    //     TOMCAT_DIR = '/opt/tomcat/webapps'
-    // }
+    environment {
+        TOMCAT_URL = "http://65.2.121.231:8080"
+        APP_NAME = "studentapp"
+    }
 
     stages {
 
         stage('Pull') {
             steps {
-                echo 'Pulling source code from Git repository'
-                git branch: 'devops', 
-                url: 'https://github.com/abhilashmwaghmare/EASY_CRUD.git'
+                git branch: 'master',
+                    url: 'https://github.com/Sanket006/student-ui.git'
             }
         }
 
-        stage('Build') {
+        stage('Build WAR') {
             steps {
-                echo 'Building the application'
-                sh '''cd backend
-                      mvn clean package -DskipTests'''
+                sh 'mvn clean package'
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Deploy to EC2 Tomcat') {
             steps {
-                withSonarQubeEnv('SonarQube-Server') {
-                    sh 'mvn verify sonar:sonar -Dsonar.projectKey=my-maven-app'
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
-        stage('Upload JAR to S3') {
-            steps {
-                withCredentials([
-                    aws(
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
-                        credentialsId: 'aws-s3-cred'
-                    )
-                ]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'tomcat-cred',
+                    usernameVariable: 'TOMCAT_USER',
+                    passwordVariable: 'TOMCAT_PASS'
+                )]) {
                     sh '''
-                        echo "Listing JAR files..."
-                        ls "$WORKSPACE/backend/target/"
-
-                        aws s3 cp "$WORKSPACE/backend/target/"*.jar \
-                        s3://my-artifact-bucket-jar-file/artifacts/
+                    curl -u $TOMCAT_USER:$TOMCAT_PASS \
+                    -T target/*.war \
+                    "$TOMCAT_URL/manager/text/deploy?path=/$APP_NAME&update=true"
                     '''
                 }
             }
         }
+    }
 
-        stage('Deploy') {
-            steps {
-                echo 'Deploying WAR to EC2 Tomcat server'
-
-                // withCredentials([sshUserPrivateKey(
-                //     credentialsId: 'ec2-ssh-key',
-                //     keyFileVariable: 'SSH_KEY'
-                // )]) {
-                //     sh '''
-                //       aws s3 cp \
-                //       s3://$S3_BUCKET/$APP_NAME/${BUILD_NUMBER}.war app.war
-
-                //       scp -i $SSH_KEY app.war \
-                //       $EC2_USER@$EC2_HOST:$TOMCAT_DIR/
-                //     '''
-                }
-            }
+    post {
+        success {
+            echo "student-ui deployed to EC2 Tomcat 🚀"
         }
     }
 }
+
+
+// Using S3 and EC2 Deployment 
+
+// pipeline {
+//     agent any
+
+//     environment {
+//         S3_BUCKET = 'my-app-artifacts-bucket'
+//         APP_NAME  = 'my-webapp'
+//         EC2_USER  = 'ubuntu'
+//         EC2_HOST  = ''
+//         TOMCAT_DIR = '/opt/tomcat/webapps'
+//     }
+
+//     stages {
+
+//         stage('Pull') {
+//             steps {
+//                 echo 'Pulling source code from Git repository'
+//                 git branch: 'devops', 
+//                 url: 'https://github.com/abhilashmwaghmare/EASY_CRUD.git'
+//             }
+//         }
+
+//         stage('Build') {
+//             steps {
+//                 echo 'Building the application'
+//                 sh '''cd backend
+//                       mvn clean package -DskipTests'''
+//             }
+//         }
+
+//         stage('SonarQube Analysis') {
+//             steps {
+//                 withSonarQubeEnv('SonarQube-Server') {
+//                     sh 'mvn verify sonar:sonar -Dsonar.projectKey=my-maven-app'
+//                 }
+//             }
+//         }
+
+//         stage('Quality Gate') {
+//             steps {
+//                 timeout(time: 5, unit: 'MINUTES') {
+//                     waitForQualityGate abortPipeline: true
+//                 }
+//             }
+//         }
+
+//         stage('Upload JAR to S3') {
+//             steps {
+//                 withCredentials([
+//                     aws(
+//                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+//                         credentialsId: 'aws-s3-cred'
+//                     )
+//                 ]) {
+//                     sh '''
+//                         echo "Listing JAR files..."
+//                         ls "$WORKSPACE/backend/target/"
+
+//                         aws s3 cp "$WORKSPACE/backend/target/"*.jar \
+//                         s3://my-artifact-bucket-jar-file/artifacts/
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('Deploy') {
+//             steps {
+//                 echo 'Deploying WAR to EC2 Tomcat server'
+
+//                 // withCredentials([sshUserPrivateKey(
+//                 //     credentialsId: 'ec2-ssh-key',
+//                 //     keyFileVariable: 'SSH_KEY'
+//                 // )]) {
+//                 //     sh '''
+//                 //       aws s3 cp \
+//                 //       s3://$S3_BUCKET/$APP_NAME/${BUILD_NUMBER}.war app.war
+
+//                 //       scp -i $SSH_KEY app.war \
+//                 //       $EC2_USER@$EC2_HOST:$TOMCAT_DIR/
+//                 //     '''
+//                 }
+//             }
+//         }
+//     }
+// }

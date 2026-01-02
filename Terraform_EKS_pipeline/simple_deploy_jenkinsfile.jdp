@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Pull Code') {
+            steps {
+                echo 'Pulling source code from Git repository'
+                git branch: 'devops',
+                url: 'https://github.com/abhilashmwaghmare/EASY_CRUD.git'
+            }
+        }
+        stage('Build Backend Image') {
+            steps {
+                sh '''echo Building Backend Image...
+                docker build -t sanket006/backend:latest .'''
+            }
+        }
+
+        stage ('Push Backend Image') {
+            steps {
+                sh '''echo Pushing Backend Image...
+                docker push sanket006/backend:latest'''
+            }
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                sh '''echo Building Frontend Image...
+                docker build -t sanket006/frontend:latest .'''
+            }
+        }
+
+        stage ('Push Frontend Image') {
+            steps {
+                sh '''echo Pushing Frontend Image...
+                docker push sanket006/frontend:latest'''
+            }
+        }
+
+        stage('Deploy to kubrnetes') {
+            steps {
+                sh '''echo Deploying to Kubernetes...
+                kubectl apply -f simple-deploy/'''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''echo Verifying Deployment...
+                kubectl get pods'''
+            }
+        }
+    }
+}
