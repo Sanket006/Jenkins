@@ -18,13 +18,15 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                sh '''cd Terraform_EKS_pipeline
+                terraform init'''
             }
         }
 
         stage('Terraform Plan') {
            steps {
-               sh 'terraform plan'
+               sh '''cd Terraform_EKS_pipeline
+               terraform plan'''
            }
        }
 
