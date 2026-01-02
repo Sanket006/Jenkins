@@ -1,8 +1,29 @@
+terraform {
+  required_version = ">= 1.3.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.25"
+    }
+  }
+}
+
+############################
+# AWS Provider
+############################
+
 provider "aws" {
   region = var.aws_region
 }
 
-### Get Default VPC Subnets
+############################
+# Default VPC + Subnets
+############################
 
 data "aws_vpc" "default" {
   default = true
@@ -15,7 +36,9 @@ data "aws_subnets" "default" {
   }
 }
 
-### IAM Role for EKS Cluster
+############################
+# EKS Cluster IAM Role
+############################
 
 resource "aws_iam_role" "eks_cluster_role" {
   name = "eks-cluster-role"
@@ -24,7 +47,9 @@ resource "aws_iam_role" "eks_cluster_role" {
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
-      Principal = { Service = "eks.amazonaws.com" }
+      Principal = {
+        Service = "eks.amazonaws.com"
+      }
       Action = "sts:AssumeRole"
     }]
   })
@@ -35,8 +60,9 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-
-### EKS Cluster
+############################
+# EKS Cluster
+############################
 
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
@@ -46,11 +72,14 @@ resource "aws_eks_cluster" "eks" {
     subnet_ids = data.aws_subnets.default.ids
   }
 
-  depends_on = [aws_iam_role_policy_attachment.eks_cluster_policy]
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_cluster_policy
+  ]
 }
 
-### IAM Role for Worker Nodes
-
+############################
+# Node Group IAM Role
+############################
 
 resource "aws_iam_role" "node_role" {
   name = "eks-node-role"
@@ -59,7 +88,9 @@ resource "aws_iam_role" "node_role" {
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
       Action = "sts:AssumeRole"
     }]
   })
@@ -80,8 +111,9 @@ resource "aws_iam_role_policy_attachment" "ecr_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-### Node Group
-
+############################
+# EKS Node Group
+############################
 
 resource "aws_eks_node_group" "nodes" {
   cluster_name    = aws_eks_cluster.eks.name
@@ -89,10 +121,11 @@ resource "aws_eks_node_group" "nodes" {
   node_role_arn   = aws_iam_role.node_role.arn
   subnet_ids      = data.aws_subnets.default.ids
   instance_types  = [var.node_instance_type]
+
   scaling_config {
     desired_size = var.desired_nodes
-    max_size     = 3
     min_size     = 1
+    max_size     = 3
   }
 
   depends_on = [
@@ -101,3 +134,58 @@ resource "aws_eks_node_group" "nodes" {
     aws_iam_role_policy_attachment.ecr_policy
   ]
 }
+
+# ############################
+# # EKS Auth Data Sources
+# ############################
+
+# data "aws_eks_cluster" "eks_auth" {
+#   name = aws_eks_cluster.eks.name
+# }
+
+# data "aws_eks_cluster_auth" "eks_auth" {
+#   name = aws_eks_cluster.eks.name
+# }
+
+# ############################
+# # Kubernetes Provider
+# ############################
+
+# provider "kubernetes" {
+#   host                   = data.aws_eks_cluster.eks_auth.endpoint
+#   cluster_ca_certificate = base64decode(
+#     data.aws_eks_cluster.eks_auth.certificate_authority[0].data
+#   )
+#   token = data.aws_eks_cluster_auth.eks_auth.token
+# }
+
+# ############################
+# # Grant Admin Access (IAM Role/User)
+# ############################
+
+# resource "aws_eks_access_entry" "admin" {
+#   cluster_name  = aws_eks_cluster.eks.name
+#   principal_arn = var.admin_principal_arn
+#   type          = "STANDARD"
+# }
+
+# resource "aws_eks_access_policy_association" "admin_policy" {
+#   cluster_name  = aws_eks_cluster.eks.name
+#   principal_arn = aws_eks_access_entry.admin.principal_arn
+#   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+#   access_scope {
+#     type = "cluster"
+#   }
+# }
+
+# ############################
+# # Grant Node Group Access (CRITICAL)
+# ############################
+
+# resource "aws_eks_access_entry" "nodes" {
+#   cluster_name  = aws_eks_cluster.eks.name
+#   principal_arn = aws_iam_role.node_role.arn
+#   type          = "EC2_LINUX"
+# }
+

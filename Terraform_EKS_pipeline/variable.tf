@@ -14,3 +14,6 @@ variable "desired_nodes" {
   default = 2
 }
 
+# variable "admin_principal_arn" {
+#   default = "arn:aws:iam::285513790808:user/sanket"
+#   }
