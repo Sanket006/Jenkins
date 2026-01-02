@@ -33,14 +33,16 @@ pipeline {
       stage('Terraform apply') {
           steps {
             //    input message: "Do you want to deploy EKS?"
-               sh 'terraform apply -auto-approve'
+               sh '''cd Terraform_EKS_pipeline
+                terraform apply -auto-approve'''
            }
         }
        
       //  stage('Terraform destroy') {
        //     steps {
         //        input message: "Do you want to destroy EKS?"
-        //        sh 'terraform destroy -auto-approve'
+        //        sh '''cd Terraform_EKS_pipeline
+        //        terraform destroy -auto-approve'''
          //   }
         //}
 
