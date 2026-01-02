@@ -6,34 +6,34 @@ pipeline {
             steps {
                 echo 'Pulling source code from Git repository'
                 git branch: 'devops',
-                url: 'https://github.com/abhilashmwaghmare/EASY_CRUD.git'
+                url: 'https://github.com/Sanket006/EASY_CRUD.git'
             }
         }
         stage('Build Backend Image') {
             steps {
                 sh '''echo Building Backend Image...
-                docker build -t sanket006/backend:latest .'''
+                docker build -t sanket006/devops/backend:latest .'''
             }
         }
 
         stage ('Push Backend Image') {
             steps {
                 sh '''echo Pushing Backend Image...
-                docker push sanket006/backend:latest'''
+                docker push sanket006/devops/backend:latest'''
             }
         }
 
         stage('Build Frontend Image') {
             steps {
                 sh '''echo Building Frontend Image...
-                docker build -t sanket006/frontend:latest .'''
+                docker build -t sanket006/devops/frontend:latest .'''
             }
         }
 
         stage ('Push Frontend Image') {
             steps {
                 sh '''echo Pushing Frontend Image...
-                docker push sanket006/frontend:latest'''
+                docker push sanket006/devops/frontend:latest'''
             }
         }
 
