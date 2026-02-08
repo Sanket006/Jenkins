@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Pulling source code from Git repository'
                 git branch: 'devops',
-                url: 'https://github.com/Sanket006/EASY_CRUD.git'
+                url: 'https://github.com/Sanket006/Three-Tier-Using-JenkinsFile.git'
             }
         }
         stage('Build Backend Image') {
@@ -20,7 +20,8 @@ pipeline {
         stage ('Push Backend Image') {
             steps {
                 echo 'Pushing Backend Image...'
-                sh 'docker push sanket006/easy-backend:latest'
+                sh '''docker push sanket006/easy-backend:latest
+                docker rmi -f sanket006/easy-backend:latest'''
             }
         }
 
@@ -35,14 +36,15 @@ pipeline {
         stage ('Push Frontend Image') {
             steps {
                 echo 'Pushing Frontend Image...'
-                sh 'docker push sanket006/easy-frontend:latest'
+                sh '''docker push sanket006/easy-frontend:latest
+                docker rmi -f sanket006/easy-frontend:latest''' 
             }
         }
 
         stage('Configure Kubeconfig') {
            steps {
               sh '''
-                aws eks update-kubeconfig --region ap-south-1 --name demo-eks-cluster1
+                aws eks update-kubeconfig --region ap-south-1 --name demo-eks-cluster
                 kubectl get nodes
                 '''
             }
