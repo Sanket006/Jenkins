@@ -8,7 +8,7 @@ pipeline {
         stage('Pull') {
             steps {
                 echo 'Pulling source code from Git repository'
-                git 'https://github.com/Sanket006/EasyCRUD.git'
+                git 'https://github.com/Sanket006/crud-app-aws-ec2-rds.git'
             }
         }
 

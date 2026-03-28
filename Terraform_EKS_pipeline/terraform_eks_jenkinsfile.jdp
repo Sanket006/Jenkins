@@ -12,7 +12,7 @@ pipeline {
         stage('Pull Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Sanket006/Jenkins.git'
+                    url: 'https://github.com/Sanket006/jenkins-cicd-pipelines.git'
             }
         }
 

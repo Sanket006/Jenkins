@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Pulling source code from Git repository'
                 git branch: 'main',
-                    url: 'https://github.com/Sanket006/EasyCRUD.git'
+                    url: 'https://github.com/Sanket006/crud-app-aws-ec2-rds.git'
             }
         }
         stage ('Build') {

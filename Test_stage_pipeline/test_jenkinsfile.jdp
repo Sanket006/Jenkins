@@ -7,7 +7,7 @@ pipeline {
             steps {
                 echo 'Pulling source code from Git repository'
                 git branch: 'devops', 
-                url: 'https://github.com/abhilashmwaghmare/EASY_CRUD.git'
+                url: 'https://github.com/Sanket006/nodejs-app-jenkins-pipeline.git'
             }
         }
 
